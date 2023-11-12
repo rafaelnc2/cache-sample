@@ -23,6 +23,7 @@ builder.Services.AddDbContext<DataContext>(opt => opt.UseSqlServer(builder.Confi
 
 builder.Services.AddBootstrapperRegistration();
 builder.Services.AddMediatrService();
+builder.Services.AddDistributedMemoryCacheService();
 
 
 var app = builder.Build();

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CacheSample.Core\CacheSample.Core.csproj" />
+    <ProjectReference Include="..\CacheSample.Shared\CacheSample.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
