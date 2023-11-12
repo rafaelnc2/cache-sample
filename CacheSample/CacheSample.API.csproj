@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>42de9e94-5c19-465c-8fba-61d46e21cf75</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.13" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CacheSample.Application\CacheSample.Application.csproj" />
+    <ProjectReference Include="..\CacheSample.Core\CacheSample.Core.csproj" />
+    <ProjectReference Include="..\CacheSample.Infra\CacheSample.Infra.csproj" />
+    <ProjectReference Include="..\CacheSample.Shared\CacheSample.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
