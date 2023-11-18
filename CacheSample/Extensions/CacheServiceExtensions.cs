@@ -1,5 +1,4 @@
-﻿using CacheSample.Infra.Caching;
-using CacheSample.Shared.Interfaces;
+﻿using Microsoft.Extensions.Caching.Memory;
 
 namespace CacheSample.Api.Extensions;
 
@@ -9,6 +8,6 @@ public static class CacheServiceExtensions
     {
         services.AddDistributedMemoryCache();
 
-        services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<IMemoryCache, MemoryCache>();
     }
 }

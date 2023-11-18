@@ -43,7 +43,7 @@ public class StudentRepository : IStudentRepository
     public async Task<IEnumerable<Student>> GetStudentsAsync() =>
         await _ctx.Student.AsNoTracking().ToListAsync();
 
-    public async Task<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         if (pageNumber > 0)
             pageNumber = (pageNumber - 1) * pageSize;
