@@ -1,7 +1,6 @@
 using CacheSample.Api.Extensions;
 using CacheSample.Api.Filters;
-using CacheSample.Infra.DataAccess.EFCore.Context;
-using Microsoft.EntityFrameworkCore;
+using CacheSample.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,16 +13,16 @@ builder.Services.AddControllers(options =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<DataContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("defaultConnection")));
-
-//builder.Services.AddScoped<GlobalExceptionHandlingFilter>();
-
+builder.Services.AddDatabaseContext(builder.Configuration);
 
 builder.Services.AddBootstrapperRegistration();
+
 builder.Services.AddMediatrService();
-builder.Services.AddDistributedMemoryCacheService();
+
+builder.Services.AddDistributedMemoryCacheService(builder.Configuration);
 
 
 var app = builder.Build();

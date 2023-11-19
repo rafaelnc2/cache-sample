@@ -9,6 +9,6 @@ public class RepositoriesBootstrapper
     public void ChildServiceRegister(IServiceCollection services)
     {
         services.AddScoped<StudentRepository>();
-        services.AddScoped<IStudentRepository, StudentCacheRepository>();
+        services.AddScoped<IStudentRepository, StudentCachedRepository>();
     }
 }

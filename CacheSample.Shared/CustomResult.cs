@@ -6,7 +6,7 @@ public class CustomResult<T>
 {
     public HttpStatusCode StatusCode { get; init; }
     public bool Success { get; init; }
-    public T Data { get; init; }
+    public T? Data { get; init; }
     public IEnumerable<string> Errors { get; init; } = Enumerable.Empty<string>();
 
     public CustomResult()

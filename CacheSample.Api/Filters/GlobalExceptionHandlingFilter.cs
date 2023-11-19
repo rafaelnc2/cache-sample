@@ -10,7 +10,8 @@ public class GlobalExceptionHandlingFilter : Attribute, IAsyncExceptionFilter
     {
         var logger = context.HttpContext.RequestServices.GetService<ILogger<GlobalExceptionHandlingFilter>>();
 
-        logger.LogError($"Exception - {context.Exception.StackTrace}");
+        if (logger is not null)
+            logger.LogError($"Exception - {context.Exception.StackTrace}");
 
         return Task.Run(() =>
         {

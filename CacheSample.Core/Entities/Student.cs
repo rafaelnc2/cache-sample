@@ -18,10 +18,10 @@ public class Student : Entity
         CreateDate = DateTime.Now;
     }
 
-    public string Name { get; private set; } = "";
-    public string Cpf { get; private set; } = "";
-    public string Email { get; private set; } = "";
-    public string BirthDay { get; private set; } = "";
+    public string Name { get; private set; } = null!;
+    public string Cpf { get; private set; } = null!;
+    public string Email { get; private set; } = null!;
+    public string BirthDay { get; private set; } = null!;
 
 
     public IReadOnlyCollection<string> Errors { get => _errors; }

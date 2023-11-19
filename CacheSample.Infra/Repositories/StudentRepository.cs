@@ -41,7 +41,7 @@ public class StudentRepository : IStudentRepository
         await _ctx.Student.AsNoTracking().FirstOrDefaultAsync(x => x.Id == studentId);
 
     public async Task<IEnumerable<Student>> GetStudentsAsync() =>
-        await _ctx.Student.AsNoTracking().ToListAsync();
+        await _ctx.Student.AsNoTracking().ToListAsync() ?? Enumerable.Empty<Student>();
 
     public async Task<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
@@ -51,6 +51,6 @@ public class StudentRepository : IStudentRepository
         return await _ctx.Student
             .AsNoTracking()
             .Skip(pageNumber).Take(pageSize)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken) ?? Enumerable.Empty<Student>();
     }
 }
