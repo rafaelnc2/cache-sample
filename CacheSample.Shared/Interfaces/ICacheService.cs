@@ -2,11 +2,11 @@
 
 public interface ICacheService
 {
-    Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T : class;
+    Task<IEnumerable<T>> GetAllDataAsync<T>(string hashKey) where T : class;
 
-    Task<T?> GetAsync<T>(string key, Func<Task<T>> factory, CancellationToken cancellationToken = default) where T : class;
+    Task<T?> GetDataByIdAsync<T>(string hashey, int dataId) where T : class;
 
-    Task SetAsync<T>(string key, T value, CancellationToken cancellationToken = default) where T : class;
+    Task SetDataAsync<T>(string hashey, int dataId, T value) where T : class;
 
-    Task RemoveAsync<T>(string key, CancellationToken cancellationToken = default);
+    Task RemoveDataAsync(string key);
 }

@@ -1,18 +1,17 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using CacheSample.Infra.Caching;
+using CacheSample.Shared.Interfaces;
+using StackExchange.Redis;
 
 namespace CacheSample.Api.Extensions;
 
 public static class CacheServiceExtensions
 {
-    public static void AddDistributedMemoryCacheService(this IServiceCollection services, IConfiguration config)
+    public static void AddRedisService(this IServiceCollection services, IConfiguration config)
     {
-        services.AddDistributedMemoryCache();
+        string redisConnectionString = config.GetConnectionString("redis") ?? string.Empty;
 
-        services.AddSingleton<IMemoryCache, MemoryCache>();
+        services.AddSingleton<IConnectionMultiplexer>(opt => ConnectionMultiplexer.Connect(redisConnectionString));
 
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = config.GetConnectionString("redis");
-        });
+        services.AddScoped<ICacheService, CacheService>();
     }
 }

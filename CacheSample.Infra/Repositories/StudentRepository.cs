@@ -16,7 +16,7 @@ public class StudentRepository : IStudentRepository
 
     public async Task<Student> CreateStudentAsync(Student student)
     {
-        _ctx.Student.Add(student);
+        await _ctx.Student.AddAsync(student);
 
         await _ctx.SaveChangesAsync();
 

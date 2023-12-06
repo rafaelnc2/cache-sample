@@ -22,7 +22,7 @@ builder.Services.AddBootstrapperRegistration();
 
 builder.Services.AddMediatrService();
 
-builder.Services.AddDistributedMemoryCacheService(builder.Configuration);
+builder.Services.AddRedisService(builder.Configuration);
 
 
 var app = builder.Build();

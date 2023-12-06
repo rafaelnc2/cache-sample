@@ -1,51 +1,60 @@
 ﻿using CacheSample.Shared.Interfaces;
-using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 using System.Text.Json;
 
 namespace CacheSample.Infra.Caching;
 
 public class CacheService : ICacheService
 {
-    private readonly IDistributedCache _distributedCache;
+    private readonly IDatabase _cacheDb;
 
-    public CacheService(IDistributedCache distributedCache)
+    public CacheService(IConnectionMultiplexer redis)
     {
-        _distributedCache = distributedCache;
+        _cacheDb = redis.GetDatabase();
     }
 
-    public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T : class
+    public async Task<IEnumerable<T>> GetAllDataAsync<T>(string hashKey) where T : class
     {
-        string? cachedValue = await _distributedCache.GetStringAsync(key, cancellationToken);
+        var cachedValue = await _cacheDb.HashGetAllAsync(hashKey);
 
         if (cachedValue is null)
-            return null;
+            return Enumerable.Empty<T>();
 
-        T? value = JsonSerializer.Deserialize<T>(cachedValue);
+        var convertedHashData = Array.ConvertAll(cachedValue, val => JsonSerializer.Deserialize<T>(val.Value)).ToList();
 
-        return value;
+        return convertedHashData;
     }
 
-    public async Task<T?> GetAsync<T>(string key, Func<Task<T>> factory, CancellationToken cancellationToken = default) where T : class
+    public async Task<T?> GetDataByIdAsync<T>(string hashey, int dataId) where T : class
     {
-        T? cachedValue = await GetAsync<T>(key, cancellationToken);
+        string? stringCachedValue = await _cacheDb.HashGetAsync(hashey, dataId);
 
-        if (cachedValue is not null)
-            return cachedValue;
+        T? cachedValue = null;
 
-        cachedValue = await factory();
-
-        await SetAsync(key, cachedValue, cancellationToken);
+        if (stringCachedValue is not null)
+            cachedValue = JsonSerializer.Deserialize<T>(stringCachedValue);
 
         return cachedValue;
     }
 
-    public async Task SetAsync<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
+    public async Task SetDataAsync<T>(string hashey, int dataId, T value) where T : class
     {
         string cacheValue = JsonSerializer.Serialize(value);
 
-        await _distributedCache.SetStringAsync(key, cacheValue, cancellationToken);
+        await _cacheDb.HashSetAsync(hashey, new HashEntry[]
+        {
+            new HashEntry(dataId, cacheValue)
+        });
     }
 
-    public async Task RemoveAsync<T>(string key, CancellationToken cancellationToken = default) =>
-        await _distributedCache.RemoveAsync(key, cancellationToken);
+
+    public async Task RemoveDataAsync(string key)
+    {
+        var exists = _cacheDb.KeyExists(key);
+
+        if (exists)
+        {
+            await _cacheDb.KeyDeleteAsync(key);
+        }
+    }
 }
