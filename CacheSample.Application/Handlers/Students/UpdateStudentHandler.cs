@@ -1,5 +1,6 @@
 ﻿using CacheSample.Application.Commands.Students;
 using CacheSample.Shared;
+using CacheSample.Shared.Interfaces;
 using CacheSample.Shared.Responses;
 
 namespace CacheSample.Application.Handlers.Students;
@@ -7,10 +8,12 @@ namespace CacheSample.Application.Handlers.Students;
 public class UpdateStudentHandler : IRequestHandler<UpdateStudentCommand, CustomResult<StudentResponse>>
 {
     private readonly IStudentRepository _studentRepository;
+    private readonly ICacheService _cacheService;
 
-    public UpdateStudentHandler(IStudentRepository studentRepository)
+    public UpdateStudentHandler(IStudentRepository studentRepository, ICacheService cacheService)
     {
         _studentRepository = studentRepository;
+        _cacheService = cacheService;
     }
 
     public async Task<CustomResult<StudentResponse>> Handle(UpdateStudentCommand request, CancellationToken cancellationToken)
@@ -30,6 +33,8 @@ public class UpdateStudentHandler : IRequestHandler<UpdateStudentCommand, Custom
         await _studentRepository.UpdateStudentAsync(student);
 
         StudentResponse response = student;
+
+        _cacheService.SetData(response.Id, response);
 
         return result.OkResponse(response);
     }

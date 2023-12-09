@@ -20,7 +20,7 @@ public class GetStudentByIdHandler : IRequestHandler<GetStudentByIdQuery, Custom
         if (request.Id <= 0)
             return result.BadRequestResponse("Invalid Id");
 
-        var student = await _repository.GetStudentByIdNoTrackAsync(request.Id);
+        var student = await _repository.GetStudentByIdAsync(request.Id);
 
         if (student is null)
             return result.NotFoundResponse();

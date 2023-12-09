@@ -1,12 +1,16 @@
-﻿namespace CacheSample.Shared.Interfaces;
+﻿using NRedisStack.Search;
+
+namespace CacheSample.Shared.Interfaces;
 
 public interface ICacheService
 {
-    Task<IEnumerable<T>> GetAllDataAsync<T>(string hashKey) where T : class;
+    public void CreateIndex(Schema schema, string indexName, string dataPrefix);
 
-    Task<T?> GetDataByIdAsync<T>(string hashey, int dataId) where T : class;
+    IEnumerable<T> GetAllData<T>() where T : class;
 
-    Task SetDataAsync<T>(string hashey, int dataId, T value) where T : class;
+    T? GetDataById<T>(int dataId) where T : class;
 
-    Task RemoveDataAsync(string key);
+    void SetData<T>(int dataId, T value) where T : class;
+
+    void RemoveDataAsync(string key);
 }

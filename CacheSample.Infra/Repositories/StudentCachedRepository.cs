@@ -1,39 +1,38 @@
-﻿using CacheSample.Core.Entities;
+﻿using CacheSample.Core.Constants;
+using CacheSample.Core.Entities;
 using CacheSample.Core.Repositories;
-using CacheSample.Infra.DataAccess.EFCore.Context;
 using CacheSample.Shared.Interfaces;
+using NRedisStack.Search;
 
 namespace CacheSample.Infra.Repositories;
 
 public class StudentCachedRepository : IStudentRepository
 {
-    private const string HASHKEY = "hashStudents";
-
     private readonly StudentRepository _decoratedRepository;
     private readonly ICacheService _cacheService;
-    private readonly DataContext _ctx;
 
-    public StudentCachedRepository(StudentRepository decoratedRepository, ICacheService cacheService, DataContext ctx)
+    public StudentCachedRepository(StudentRepository decoratedRepository, ICacheService cacheService)
     {
         _decoratedRepository = decoratedRepository;
         _cacheService = cacheService;
-        _ctx = ctx;
+
+        var studentSchema = new Schema()
+            .AddNumericField(new FieldName("$.Id", "id"))
+            .AddTextField(new FieldName("$.Name", "name"))
+            .AddTextField(new FieldName("$.Cpf", "cpf"))
+            .AddTextField(new FieldName("$.Email", "email"))
+            .AddTextField(new FieldName("$.BirthDay", "birthDay"));
+
+        _cacheService.CreateIndex(studentSchema, CacheKeysConstants.STUDENTS_INDEX_NAME, CacheKeysConstants.STUDENTS_PREFIX);
     }
 
-    public async Task<Student> CreateStudentAsync(Student student)
-    {
-        student = await _decoratedRepository.CreateStudentAsync(student);
+    public async Task<Student> CreateStudentAsync(Student student) =>
+        await _decoratedRepository.CreateStudentAsync(student);
 
-        await _cacheService.SetDataAsync(HASHKEY, student.Id, student);
-
-        return student;
-    }
 
     public async Task<Student> UpdateStudentAsync(Student student)
     {
         await _decoratedRepository.UpdateStudentAsync(student);
-
-        await _cacheService.SetDataAsync(HASHKEY, student.Id, student);
 
         return student;
     }
@@ -42,23 +41,7 @@ public class StudentCachedRepository : IStudentRepository
 
     public async Task<Student?> GetStudentByIdAsync(int studentId)
     {
-        Student? student = await _cacheService.GetDataByIdAsync<Student>(HASHKEY, studentId);
-
-        if (student is null)
-            student = await GetStudentByIdNoTrackAsync(studentId);
-
-        if (student is null)
-            return null;
-
-        _ctx.Set<Student>().Attach(student);
-
-        return student;
-    }
-
-
-    public async Task<Student?> GetStudentByIdNoTrackAsync(int studentId)
-    {
-        Student? student = await _cacheService.GetDataByIdAsync<Student>(HASHKEY, studentId);
+        Student? student = _cacheService.GetDataById<Student>(studentId);
 
         if (student is null)
         {
@@ -67,27 +50,27 @@ public class StudentCachedRepository : IStudentRepository
             if (student is null)
                 return null;
 
-            await _cacheService.SetDataAsync(HASHKEY, student.Id, student);
+            _cacheService.SetData(student.Id, student);
         }
 
         return student;
     }
 
-    public async Task<IEnumerable<Student>> GetStudentsAsync()
+    public async ValueTask<IEnumerable<Student>> GetStudentsAsync()
     {
-        var cachedStudents = await _cacheService.GetAllDataAsync<Student>(HASHKEY);
+        var cachedStudents = _cacheService.GetAllData<Student>();
 
         if (cachedStudents is not null)
-            return cachedStudents;
+            return cachedStudents.OrderBy(item => item.Id);
 
         var students = await _decoratedRepository.GetStudentsAsync();
 
         return students;
     }
 
-    public async Task<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
+    public async ValueTask<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
-        var cachedStudents = await _cacheService.GetAllDataAsync<Student>(HASHKEY);
+        var cachedStudents = _cacheService.GetAllData<Student>();
 
         var students = Enumerable.Empty<Student>();
 

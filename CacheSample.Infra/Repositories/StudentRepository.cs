@@ -40,10 +40,10 @@ public class StudentRepository : IStudentRepository
     public async Task<Student?> GetStudentByIdNoTrackAsync(int studentId) =>
         await _ctx.Student.AsNoTracking().FirstOrDefaultAsync(x => x.Id == studentId);
 
-    public async Task<IEnumerable<Student>> GetStudentsAsync() =>
+    public async ValueTask<IEnumerable<Student>> GetStudentsAsync() =>
         await _ctx.Student.AsNoTracking().ToListAsync() ?? Enumerable.Empty<Student>();
 
-    public async Task<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    public async ValueTask<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         if (pageNumber > 0)
             pageNumber = (pageNumber - 1) * pageSize;

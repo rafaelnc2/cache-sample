@@ -10,7 +10,6 @@ public interface IStudentRepository
 
 
     Task<Student?> GetStudentByIdAsync(int studentId);
-    Task<Student?> GetStudentByIdNoTrackAsync(int studentId);
-    Task<IEnumerable<Student>> GetStudentsAsync();
-    Task<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken);
+    ValueTask<IEnumerable<Student>> GetStudentsAsync();
+    ValueTask<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken);
 }

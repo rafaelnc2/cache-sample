@@ -1,4 +1,8 @@
 ﻿using CacheSample.Shared.Interfaces;
+using NRedisStack;
+using NRedisStack.RedisStackCommands;
+using NRedisStack.Search;
+using NRedisStack.Search.Literals.Enums;
 using StackExchange.Redis;
 using System.Text.Json;
 
@@ -7,54 +11,83 @@ namespace CacheSample.Infra.Caching;
 public class CacheService : ICacheService
 {
     private readonly IDatabase _cacheDb;
+    private readonly ISearchCommands _ftCommands;
+    private readonly IJsonCommands _jsonCommands;
+
+    private string _indexName = string.Empty;
+    private string _dataPrefix = string.Empty;
 
     public CacheService(IConnectionMultiplexer redis)
     {
         _cacheDb = redis.GetDatabase();
+
+        _ftCommands = _cacheDb.FT();
+
+        _jsonCommands = _cacheDb.JSON();
     }
 
-    public async Task<IEnumerable<T>> GetAllDataAsync<T>(string hashKey) where T : class
+    public void CreateIndex(Schema schema, string indexName, string dataPrefix)
     {
-        var cachedValue = await _cacheDb.HashGetAllAsync(hashKey);
+        _indexName = indexName;
+
+        _dataPrefix = dataPrefix;
+
+        var indexInfo = _ftCommands.Info(indexName);
+
+        if (indexInfo is not null)
+            return;
+
+        _ftCommands.Create(
+            indexName,
+            new FTCreateParams()
+                .On(IndexDataType.JSON)
+                .Prefix(dataPrefix),
+            schema
+        );
+    }
+
+
+
+    public IEnumerable<T> GetAllData<T>() where T : class
+    {
+        var cachedValue = _ftCommands.Search(
+            _indexName,
+            new Query())
+            .Documents.Select(x => x["json"]).ToArray();
 
         if (cachedValue is null)
             return Enumerable.Empty<T>();
 
-        var convertedHashData = Array.ConvertAll(cachedValue, val => JsonSerializer.Deserialize<T>(val.Value)).ToList();
-
-        return convertedHashData;
+        return Array.ConvertAll(cachedValue, val => JsonSerializer.Deserialize<T>(val)).ToList();
     }
 
-    public async Task<T?> GetDataByIdAsync<T>(string hashey, int dataId) where T : class
+    public T? GetDataById<T>(int dataId) where T : class
     {
-        string? stringCachedValue = await _cacheDb.HashGetAsync(hashey, dataId);
+        var stringCachedValue = _ftCommands.Search(
+            _indexName,
+            new Query($"@id:[{dataId} {dataId}]"))
+            .Documents.Select(x => x["json"])
+            .FirstOrDefault();
 
-        T? cachedValue = null;
+        if (stringCachedValue.HasValue)
+            return JsonSerializer.Deserialize<T>(stringCachedValue.ToString());
 
-        if (stringCachedValue is not null)
-            cachedValue = JsonSerializer.Deserialize<T>(stringCachedValue);
-
-        return cachedValue;
+        return null;
     }
 
-    public async Task SetDataAsync<T>(string hashey, int dataId, T value) where T : class
+    public void SetData<T>(int dataId, T value) where T : class
     {
         string cacheValue = JsonSerializer.Serialize(value);
 
-        await _cacheDb.HashSetAsync(hashey, new HashEntry[]
-        {
-            new HashEntry(dataId, cacheValue)
-        });
+        _jsonCommands.Set($"{_dataPrefix}{dataId}", "$", cacheValue);
     }
 
 
-    public async Task RemoveDataAsync(string key)
+    public void RemoveDataAsync(string key)
     {
         var exists = _cacheDb.KeyExists(key);
 
         if (exists)
-        {
-            await _cacheDb.KeyDeleteAsync(key);
-        }
+            _cacheDb.KeyDelete(key);
     }
 }
