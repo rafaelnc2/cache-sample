@@ -8,6 +8,8 @@ public interface ICacheService
 
     IEnumerable<T> GetAllData<T>() where T : class;
 
+    IEnumerable<T> GetAllPaginatedData<T>(string orderBy, int page, int pageNumber) where T : class;
+
     T? GetDataById<T>(int dataId) where T : class;
 
     void SetData<T>(int dataId, T value) where T : class;

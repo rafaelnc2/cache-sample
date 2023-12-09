@@ -70,18 +70,11 @@ public class StudentCachedRepository : IStudentRepository
 
     public async ValueTask<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
-        var cachedStudents = _cacheService.GetAllData<Student>();
-
-        var students = Enumerable.Empty<Student>();
+        var cachedStudents = _cacheService.GetAllPaginatedData<Student>("id", pageNumber, pageSize);
 
         if (cachedStudents is not null)
             return cachedStudents;
 
-        students = await _decoratedRepository.GetStudentsPaginatedAsync(pageNumber, pageSize, cancellationToken);
-
-        //if (students.Any())
-        //await _cacheService.SetDataAsync<IEnumerable<Student>>(key, students, TimeSpan.FromMinutes(30));
-
-        return new List<Student>();
+        return await _decoratedRepository.GetStudentsPaginatedAsync(pageNumber, pageSize, cancellationToken);
     }
 }

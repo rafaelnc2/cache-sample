@@ -17,7 +17,9 @@ public class GetAllStudentsHandler : IRequestHandler<GetAllStudentsQuery, Custom
     {
         var result = new CustomResult<IEnumerable<StudentResponse>>();
 
-        var students = await _repository.GetStudentsAsync();
+        //var students = await _repository.GetStudentsAsync();
+
+        var students = await _repository.GetStudentsPaginatedAsync(request.PageNumber, request.PageSize, cancellationToken);
 
         List<StudentResponse> response = students.Select(student => (StudentResponse)student).ToList();
 

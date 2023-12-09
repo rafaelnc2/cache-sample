@@ -61,6 +61,23 @@ public class CacheService : ICacheService
         return Array.ConvertAll(cachedValue, val => JsonSerializer.Deserialize<T>(val)).ToList();
     }
 
+    public IEnumerable<T> GetAllPaginatedData<T>(string orderBy, int pageNumber, int pageSize) where T : class
+    {
+        var cachedValue = _ftCommands.Search(
+                _indexName,
+                new Query()
+                    .SetSortBy(orderBy)
+                    .Limit((pageNumber - 1) * pageSize, pageSize)
+            )
+            .Documents.Select(x => x["json"])
+            .ToArray();
+
+        if (cachedValue is null)
+            return Enumerable.Empty<T>();
+
+        return Array.ConvertAll(cachedValue, val => JsonSerializer.Deserialize<T>(val)).ToList();
+    }
+
     public T? GetDataById<T>(int dataId) where T : class
     {
         var stringCachedValue = _ftCommands.Search(
