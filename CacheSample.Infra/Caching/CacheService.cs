@@ -32,18 +32,20 @@ public class CacheService : ICacheService
 
         _dataPrefix = dataPrefix;
 
-        var indexInfo = _ftCommands.Info(indexName);
-
-        if (indexInfo is not null)
-            return;
-
-        _ftCommands.Create(
-            indexName,
-            new FTCreateParams()
-                .On(IndexDataType.JSON)
-                .Prefix(dataPrefix),
-            schema
-        );
+        try
+        {
+            _ftCommands.Info(indexName);
+        }
+        catch
+        {
+            _ftCommands.Create(
+                indexName,
+                new FTCreateParams()
+                    .On(IndexDataType.JSON)
+                    .Prefix(dataPrefix),
+                schema
+            );
+        }
     }
 
 

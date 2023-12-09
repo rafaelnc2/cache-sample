@@ -29,13 +29,8 @@ public class StudentCachedRepository : IStudentRepository
     public async Task<Student> CreateStudentAsync(Student student) =>
         await _decoratedRepository.CreateStudentAsync(student);
 
-
-    public async Task<Student> UpdateStudentAsync(Student student)
-    {
+    public async Task<Student> UpdateStudentAsync(Student student) =>
         await _decoratedRepository.UpdateStudentAsync(student);
-
-        return student;
-    }
 
 
 
@@ -63,9 +58,7 @@ public class StudentCachedRepository : IStudentRepository
         if (cachedStudents is not null)
             return cachedStudents.OrderBy(item => item.Id);
 
-        var students = await _decoratedRepository.GetStudentsAsync();
-
-        return students;
+        return await _decoratedRepository.GetStudentsAsync();
     }
 
     public async ValueTask<IEnumerable<Student>> GetStudentsPaginatedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
